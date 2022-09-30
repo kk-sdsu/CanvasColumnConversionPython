@@ -12,9 +12,22 @@ output file will help Canvas convert their keys from SIMS to those that will be 
 ### Docker
 There is a publicly available docker image at https://hub.docker.com/repository/docker/kkricksdsu/canvascolumnconversions
 
-```docker run --name c3 kkricksdsu/canvascolumnconversions```
+On first run:
+
+```docker run -it --name c3 -v $(pwd):/usr/src/app kkricksdsu/canvascolumnconversions:latest```
+
+Starting container after first run:
+
+```docker container start -ai c3```
 
 ### Python Locally
 Alternatively, you can download the source code and run locally on Python 3:
 
 ```python canvas-column-conversion.py```
+
+## Usage
+The app will ask for the following input via commandline:
+- file_type - either 'courses' or 'sections'
+- sims_filepath - Path to SIMS CSV file (recommend using relative path)
+- cs_filepath - Path to CS CSV file (recommend using relative path)
+- output_filepath - Path to output CSV file (recommend using relative path)
