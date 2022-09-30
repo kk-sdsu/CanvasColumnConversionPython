@@ -50,16 +50,18 @@ def validate_input(input_dict):
         if input_dict[input_item] == "":
             print("Error: " + input_item + " cannot be blank.")
             validated_inputs["validated"] = False
+    
+    if len(input_dict["sims_filepath"]) > 0:
+        validated_inputs["sims_file_contents"] = read_file(input_dict["sims_filepath"])
+        if len(validated_inputs["sims_file_contents"]) == 0:
+            print(f"Error: SIMS file at {input_dict['sims_filepath']} was empty. Please provide a file with data.")
+            validated_inputs["validated"] = False
 
-    validated_inputs["sims_file_contents"] = read_file(input_dict["sims_filepath"])
-    if len(validated_inputs["sims_file_contents"]) == 0:
-        print(f"Error: SIMS file at {input_dict['sims_filepath']} was empty. Please provide a file with data.")
-        validated_inputs["validated"] = False
-
-    validated_inputs["cs_file_contents"] = read_file(input_dict["cs_filepath"])
-    if len(validated_inputs["cs_file_contents"]) == 0:
-        print(f"Error: CS file at {input_dict['cs_filepath']} was empty. Please provide a file with data.")
-        validated_inputs["validated"] = False
+    if len(input_dict["cs_filepath"]) > 0:
+        validated_inputs["cs_file_contents"] = read_file(input_dict["cs_filepath"])
+        if len(validated_inputs["cs_file_contents"]) == 0:
+            print(f"Error: CS file at {input_dict['cs_filepath']} was empty. Please provide a file with data.")
+            validated_inputs["validated"] = False
 
     if validated_inputs["validated"] == False:
         print("Please re-run the program and correct the errors above.")        
