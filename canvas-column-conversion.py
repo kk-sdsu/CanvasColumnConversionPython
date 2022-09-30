@@ -68,7 +68,7 @@ def validate_input(input_dict):
     
     return validated_inputs
 
-# Converts the columnString to an intermediary state for matching between SIMS and CS as follows:
+# Converts the column_string to an intermediary state for matching between SIMS and CS as follows:
 # - For Sections and Courses:
 # -- Trims any leading or following whitespace
 # -- Replaces '_' with ' '
@@ -81,8 +81,22 @@ def validate_input(input_dict):
 #     this function would return 'INT S799B-Y1-Spr2022-GLBL'
 # --- Given the CS column 'INT S799B-Y1NT-Spr2022-GLBL' 
 #     this function would return 'INT S799B-Y1-Spr2022-GLBL'
-def convert_column(raw_column):
+def convert_column(column_string):
     print("convert_column function stub")
+    column = column_string or "INT_S799B-Y1-Spring2022-ExtEd"
+    column = column.strip()
+    column = column.replace('_',' ')
+    column = column.replace('-ExtEd', '-GLBL')
+    print(column)
+
+    first_dash_index = column.index('-')
+    second_dash_index = column.index('-', first_dash_index + 1)
+
+    if second_dash_index - first_dash_index == 5:
+        column_array = list(column)
+        # https://www.w3schools.com/python/python_ref_string.asp
+        # To-Do: Figure out how to delete the two extra chars for CS style IDs
+
 
 # Used when fileType arg is 'courses'
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
@@ -110,9 +124,12 @@ def output_converted_columns(matched_columns, output_filepath, column_name):
 # Otherwise relies on validate_input() to communicate any issues to the user
 def canvas_column_conversion():
     print("~~~Canvas Column Conversion~~~")
-    validated_inputs = validate_input(get_input())
-    if validated_inputs["validated"]:
-        print("Validation succeeded. Continuing on...")
-        
 
-canvas_column_conversion()
+    validated_inputs = validate_input(get_input())
+
+    if validated_inputs["validated"]:
+        print("Validation succeeded. Continuing on...")        
+
+test_column = "INT_S799B-Y1NT-Spring2022-ExtEd"
+convert_column(test_column)
+#canvas_column_conversion()
