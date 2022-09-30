@@ -8,14 +8,49 @@
 # Gets necessary input from the user for running this program 
 # (i.e.: file_type, sims_filepath, cs_filepath, and output_filepath)
 def get_input():
-    sims_filepath = input("Enter path to SIMS file for conversion: ")
-    print(sims_filepath)
+    input_dict = {
+        "file_type": "",
+        "sims_filepath": "",
+        "cs_filepath": "",
+        "output_filepath": ""
+    }
+
+    input_dict["file_type"] = input("File type ('courses' or 'sections'): ")
+    input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
+    input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
+    input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
+
+    return input_dict
+    
 
 # Returns validation object. If all checks pass then
 # successful = true and file_type, sims_filepath, cs_filepath and output_filepath are assigned their values from the user input.
 # Otherwise successful = false, and all other properties remain empty strings.
-def validate_input():
-    print("validate_input function stub")
+def validate_input(input_dict):
+    validated_inputs = {
+        "validation_successful": True,
+        "file_type": "",
+        "sims_filepath": "",
+        "cs_filepath": "",
+        "output_filepath": ""
+    }
+
+    valid_file_types = {"courses", "sections"}
+
+    if input_dict["file_type"] not in valid_file_types:
+        print(f"Error: file_type must be one of: {valid_file_types}")
+        validated_inputs["validation_successful"] = False
+
+    for input_item in input_dict:
+        if input_dict[input_item] == "":
+            print("Error: " + input_item + " cannot be blank.")
+            validated_inputs["validation_successful"] = False
+
+    if validated_inputs["validation_successful"] == False:
+        print("Please re-run the program and correct the errors above.")
+    
+    return validated_inputs
+    
 
 # Attempts to read in the filepath. Assumes that the file is a CSV with ',' as the separator.
 # Returns a promise that, if successful, evaluates to an array of objects, one for each of the rows (excluding headers).
@@ -64,7 +99,9 @@ def output_converted_columns(matched_columns, output_filepath, column_name):
 # files, converts and matches the columns and outputs to the specified output_filepath
 # Otherwise relies on validate_input() to communicate any issues to the user
 def canvas_column_conversion():
-    print("canvas_column_conversion function stub")
-    get_input()
+    print("~~~Canvas Column Conversion~~~")
+    validated_inputs = validate_input(get_input())
+    if validated_inputs["validation_successful"]:
+        print("Validation succeeded. Continuing on...")
 
 canvas_column_conversion()
