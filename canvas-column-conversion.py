@@ -5,8 +5,14 @@
 # At the time of writing, SDSU is switching from SIMS to CS and the key columns are different in CS, 
 # so the output file will help Canvas convert their keys from SIMS to those that will be coming from CS.
 
+# Gets necessary input from the user for running this program 
+# (i.e.: file_type, sims_filepath, cs_filepath, and output_filepath)
+def get_input():
+    sims_filepath = input("Enter path to SIMS file for conversion: ")
+    print(sims_filepath)
+
 # Returns validation object. If all checks pass then
-# successful = true and file_type, sims_filepath, cs_filepath and output_filepath are assigned their values from the args passed in.
+# successful = true and file_type, sims_filepath, cs_filepath and output_filepath are assigned their values from the user input.
 # Otherwise successful = false, and all other properties remain empty strings.
 def validate_input():
     print("validate_input function stub")
@@ -59,5 +65,6 @@ def output_converted_columns(matched_columns, output_filepath, column_name):
 # Otherwise relies on validate_input() to communicate any issues to the user
 def canvas_column_conversion():
     print("canvas_column_conversion function stub")
+    get_input()
 
 canvas_column_conversion()
