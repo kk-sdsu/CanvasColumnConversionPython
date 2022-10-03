@@ -8,23 +8,20 @@ import csv
 
 # Gets necessary input from the user for running this program 
 # (i.e.: file_type, sims_filepath, cs_filepath, and output_filepath)
-def get_input(input):
-    if input:
-        return input
-    else:
-        input_dict = {
-            "file_type": "",
-            "sims_filepath": "",
-            "cs_filepath": "",
-            "output_filepath": ""
-        }
+def get_input():
+    input_dict = {
+        "file_type": "",
+        "sims_filepath": "",
+        "cs_filepath": "",
+        "output_filepath": ""
+    }
+    
+    input_dict["file_type"] = input("File type ('course' or 'section'): ")
+    input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
+    input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
+    input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
 
-        input_dict["file_type"] = input("File type ('courses' or 'sections'): ")
-        input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
-        input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
-        input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
-
-        return input_dict
+    return input_dict
 
 # Attempts to read in the filepath. Assumes that the file is a CSV with ',' as the separator.
 # Returns a promise that, if successful, evaluates to an array of objects, one for each of the rows (excluding headers).
@@ -49,7 +46,7 @@ def validate_input(input_dict):
     validated_inputs = input_dict
     validated_inputs["validated"] = True
 
-    valid_file_types = {"courses", "sections"}
+    valid_file_types = {"course", "section"}
 
     if input_dict["file_type"] not in valid_file_types:
         print(f"Error: file_type must be one of: {valid_file_types}")
@@ -126,7 +123,7 @@ def convert_column(column_string):
 
     return column
 
-# Used when file_type is 'courses'
+# Used when file_type is 'course'
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
 def convert_courses(file_contents):
     contents = file_contents
@@ -148,7 +145,7 @@ def convert_courses(file_contents):
     
     return converted_courses
 
-# Used when file_type is 'sections'
+# Used when file_type is 'section'
 # Assumes both SIMS and CS CSVs use "Section_id" for the header of the section id column
 def convert_sections(file_contents):
     contents = file_contents
@@ -201,7 +198,13 @@ def match_columns(source_columns, destination_columns):
 # Outputs the matched columns to the specified filepath using the specified columnName where _SIMS and _CS are appended
 # Assumes the columns from SIMS and CS have already been matched
 def output_converted_columns(matched_columns, output_filepath, column_name):
-    print("output_converted_columns function stub")
+    with open(output_filepath, 'w', newline='') as csv_output_file:
+        field_names = ['old', 'new', 'type']
+        csv_writer = csv.DictWriter(csv_output_file, fieldnames=field_names)
+        csv_writer.writeheader()
+        for row in matched_columns:
+            row["type"] = column_name
+            csv_writer.writerow(row)
 
 # Validates the args passed in and if validation is successful then reads the
 # files, converts and matches the columns and outputs to the specified output_filepath
@@ -209,19 +212,12 @@ def output_converted_columns(matched_columns, output_filepath, column_name):
 def canvas_column_conversion():
     print("~~~Canvas Column Conversion~~~")
 
-    test_input = {
-        "file_type": "courses",
-        "sims_filepath": "./sims_courses.csv",
-        "cs_filepath": "./cs_courses.csv",
-        "output_filepath": "./out_courses.csv"
-    }
-
-    validated_inputs = validate_input(get_input(test_input))
+    validated_inputs = validate_input(get_input())
 
     if validated_inputs["validated"]:
-        print("Validation succeeded. Continuing on...")
-        sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["sims_file_contents"])
-        cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["cs_file_contents"])
+        sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"]) if validated_inputs["file_type"] == 'course' else convert_sections(validated_inputs["sims_file_contents"])
+        cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"]) if validated_inputs["file_type"] == 'course' else convert_sections(validated_inputs["cs_file_contents"])
         matched_columns = match_columns(sims_converted_columns, cs_converted_columns)
+        output_converted_columns(matched_columns, validated_inputs["output_filepath"], validated_inputs["file_type"])
 
 canvas_column_conversion()
