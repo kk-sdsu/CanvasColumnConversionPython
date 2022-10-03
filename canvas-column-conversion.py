@@ -4,6 +4,7 @@
 # to CS (Campus Solutions) for the CSV files for courses and sections which are uploaded to Canvas. 
 # At the time of writing, SDSU is switching from SIMS to CS and the key columns are different in CS, 
 # so the output file will help Canvas convert their keys from SIMS to those that will be coming from CS.
+import csv
 
 # Gets necessary input from the user for running this program 
 # (i.e.: file_type, sims_filepath, cs_filepath, and output_filepath)
@@ -28,7 +29,12 @@ def get_input():
 def read_file(filepath):
     try:
         file = open(filepath)
-        file_contents = file.read()
+        file_contents = []
+        csv_reader = csv.DictReader(file)
+        
+        for row in csv_reader:
+            file_contents.append(row)
+
         return file_contents
     except:
         return ""    
@@ -87,7 +93,6 @@ def convert_column(column_string):
     column = column.strip()
     column = column.replace('_',' ')
     column = column.replace('-ExtEd', '-GLBL')
-    print(column)
 
     first_dash_index = column.index('-')
     second_dash_index = column.index('-', first_dash_index + 1)
@@ -123,6 +128,8 @@ def convert_column(column_string):
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
 def convert_courses(file_contents):
     print("convert_course function stub")
+    print(file_contents)
+    
 
 # Used when fileType arg is 'sections'
 # Assumes both SIMS and CS CSVs use "Section_id" for the header of the section id column
@@ -149,8 +156,7 @@ def canvas_column_conversion():
     validated_inputs = validate_input(get_input())
 
     if validated_inputs["validated"]:
-        print("Validation succeeded. Continuing on...")        
+        print("Validation succeeded. Continuing on...")
+        sims_converted_courses = convert_courses(validated_inputs["sims_file_contents"])
 
-test_column = "INT_S799B-Y1NT-Spring2022-ExtEd"
-convert_column(test_column)
-#canvas_column_conversion()
+canvas_column_conversion()
