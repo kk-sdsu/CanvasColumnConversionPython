@@ -8,20 +8,23 @@ import csv
 
 # Gets necessary input from the user for running this program 
 # (i.e.: file_type, sims_filepath, cs_filepath, and output_filepath)
-def get_input():
-    input_dict = {
-        "file_type": "",
-        "sims_filepath": "",
-        "cs_filepath": "",
-        "output_filepath": ""
-    }
+def get_input(input):
+    if input:
+        return input
+    else:
+        input_dict = {
+            "file_type": "",
+            "sims_filepath": "",
+            "cs_filepath": "",
+            "output_filepath": ""
+        }
 
-    input_dict["file_type"] = input("File type ('courses' or 'sections'): ")
-    input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
-    input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
-    input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
+        input_dict["file_type"] = input("File type ('courses' or 'sections'): ")
+        input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
+        input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
+        input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
 
-    return input_dict
+        return input_dict
 
 # Attempts to read in the filepath. Assumes that the file is a CSV with ',' as the separator.
 # Returns a promise that, if successful, evaluates to an array of objects, one for each of the rows (excluding headers).
@@ -170,8 +173,30 @@ def convert_sections(file_contents):
 # Matches the columns between SIMS and CS based on their intermediary state
 # Assumes both sets of columns have already been converted to their intermediary state
 # Returns an array of objects with properties 'columnIDSIMS', the original SIMS column, and 'columnIDCS', the CS column match or empty string if none was found
-def match_columns(souce_columns, destination_columns):
-    print("match_columns function stub")
+def match_columns(source_columns, destination_columns):
+    matched_columns = []
+    matching_column_count = 0
+
+    for column_source in source_columns:
+        match_found = False
+        for column_dest in destination_columns:
+            if column_source["converted_column_id"] == column_dest["converted_column_id"]:
+                match_found = True
+                matched_columns.append({
+                    'old': column_source["original_column_id"],
+                    'new': column_dest["original_column_id"]
+                })
+                matching_column_count += 1
+                break
+        if not match_found:
+            matched_columns.append({
+                    'old': column_source["original_column_id"],
+                    'new': ''
+                })
+    
+    print(f"Found {matching_column_count} match(es) out of {len(source_columns)} SIMS column(s)")
+    return matched_columns
+            
 
 # Outputs the matched columns to the specified filepath using the specified columnName where _SIMS and _CS are appended
 # Assumes the columns from SIMS and CS have already been matched
@@ -184,13 +209,19 @@ def output_converted_columns(matched_columns, output_filepath, column_name):
 def canvas_column_conversion():
     print("~~~Canvas Column Conversion~~~")
 
-    validated_inputs = validate_input(get_input())
+    test_input = {
+        "file_type": "courses",
+        "sims_filepath": "./sims_courses.csv",
+        "cs_filepath": "./cs_courses.csv",
+        "output_filepath": "./out_courses.csv"
+    }
+
+    validated_inputs = validate_input(get_input(test_input))
 
     if validated_inputs["validated"]:
         print("Validation succeeded. Continuing on...")
         sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["sims_file_contents"])
-        print(sims_converted_columns)
         cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["cs_file_contents"])
-        print(cs_converted_columns)
+        matched_columns = match_columns(sims_converted_columns, cs_converted_columns)
 
 canvas_column_conversion()
