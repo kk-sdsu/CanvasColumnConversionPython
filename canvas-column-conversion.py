@@ -88,8 +88,7 @@ def validate_input(input_dict):
 # --- Given the CS column 'INT S799B-Y1NT-Spr2022-GLBL' 
 #     this function would return 'INT S799B-Y1-Spr2022-GLBL'
 def convert_column(column_string):
-    print("convert_column function stub")
-    column = column_string or "INT_S799B-Y1-Spring2022-ExtEd"
+    column = column_string
     column = column.strip()
     column = column.replace('_',' ')
     column = column.replace('-ExtEd', '-GLBL')
@@ -124,12 +123,27 @@ def convert_column(column_string):
 
     return column
 
-# Used when fileType arg is 'courses'
+# Used when file_type is 'courses'
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
 def convert_courses(file_contents):
-    print("convert_course function stub")
-    print(file_contents)
+    contents = file_contents
+    converted_courses = []
+
+    # Make sure that the CSV header is 'Course_ID',
+    # instruct user to check the file if the header does not match
+    if 'Course_ID' not in contents[0]:
+        print('When converting courses, please ensure that the CSV\'s header for course is \'Course_ID\'.');
+        return converted_courses
     
+    for index in range(len(contents)):
+        course_row = contents[index]
+        course_id = course_row["Course_ID"]
+        converted_courses.append({
+            'converted_column_id': convert_column(course_id),
+            'original_column_id': course_id
+        })
+    
+    return converted_courses
 
 # Used when fileType arg is 'sections'
 # Assumes both SIMS and CS CSVs use "Section_id" for the header of the section id column
@@ -158,5 +172,8 @@ def canvas_column_conversion():
     if validated_inputs["validated"]:
         print("Validation succeeded. Continuing on...")
         sims_converted_courses = convert_courses(validated_inputs["sims_file_contents"])
+        print(sims_converted_courses)
+        cs_converted_courses = convert_courses(validated_inputs["cs_file_contents"])
+        print(cs_converted_courses)
 
 canvas_column_conversion()
