@@ -132,7 +132,7 @@ def convert_courses(file_contents):
     # Make sure that the CSV header is 'Course_ID',
     # instruct user to check the file if the header does not match
     if 'Course_ID' not in contents[0]:
-        print('When converting courses, please ensure that the CSV\'s header for course is \'Course_ID\'.');
+        print('When converting courses, please ensure that the CSV\'s header for course is \'Course_ID\'.')
         return converted_courses
     
     for index in range(len(contents)):
@@ -145,10 +145,27 @@ def convert_courses(file_contents):
     
     return converted_courses
 
-# Used when fileType arg is 'sections'
+# Used when file_type is 'sections'
 # Assumes both SIMS and CS CSVs use "Section_id" for the header of the section id column
 def convert_sections(file_contents):
-    print("convert_sections funtion stub")
+    contents = file_contents
+    converted_sections = []
+
+    # Make sure that the CSV header is 'Section_id',
+    # instruct user to check the file if the header does not match
+    if 'Section_id' not in contents[0]:
+        print('When converting sections, please ensure that the CSV\'s header for section is \'Section_id\'.')
+        return converted_sections
+    
+    for index in range(len(contents)):
+        section_row = contents[index]
+        section_id = section_row["Section_id"]
+        converted_sections.append({
+            'converted_column_id': convert_column(section_id),
+            'original_column_id': section_id
+        })
+    
+    return converted_sections
 
 # Matches the columns between SIMS and CS based on their intermediary state
 # Assumes both sets of columns have already been converted to their intermediary state
@@ -171,9 +188,9 @@ def canvas_column_conversion():
 
     if validated_inputs["validated"]:
         print("Validation succeeded. Continuing on...")
-        sims_converted_courses = convert_courses(validated_inputs["sims_file_contents"])
-        print(sims_converted_courses)
-        cs_converted_courses = convert_courses(validated_inputs["cs_file_contents"])
-        print(cs_converted_courses)
+        sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["sims_file_contents"])
+        print(sims_converted_columns)
+        cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"]) if validated_inputs["file_type"] == 'courses' else convert_sections(validated_inputs["cs_file_contents"])
+        print(cs_converted_columns)
 
 canvas_column_conversion()
