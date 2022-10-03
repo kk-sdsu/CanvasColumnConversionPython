@@ -92,11 +92,32 @@ def convert_column(column_string):
     first_dash_index = column.index('-')
     second_dash_index = column.index('-', first_dash_index + 1)
 
+    # Most CS IDs have 2 extra chars between the first two dashes that need to be removed for matching
+    # Example, given column "INT_S799B-Y1NT-Spring2022-ExtEd"
+    # second_dash_index = 14, remove index 12 "N" & 13 "T" and update second dash index
+    # Result will be column_list = "INT_S799B-Y1-Spring2022-ExtEd", second_dash_index = 12
     if second_dash_index - first_dash_index == 5:
-        column_array = list(column)
-        # https://www.w3schools.com/python/python_ref_string.asp
-        # To-Do: Figure out how to delete the two extra chars for CS style IDs
+        column_list = list(column)
+        
+        del column_list[(second_dash_index - 2) : second_dash_index]
+        second_dash_index -= 2
 
+        column = ''.join(column_list)
+
+    column_right_string = column[second_dash_index:]
+    column_right_list = list(column_right_string)
+    year_first_index = 0
+
+    for index in range(len(column_right_list)):
+        if (column_right_list[index].isdigit()):
+            year_first_index = second_dash_index + index
+            break
+    
+    column_left_string = column[0:(second_dash_index + 4)]
+    column_right_string = column[year_first_index:]
+    column = column_left_string + column_right_string
+
+    return column
 
 # Used when fileType arg is 'courses'
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
