@@ -92,6 +92,7 @@ def convert_column(column_string):
     column = column.strip()
     column = column.replace('_',' ')
     column = column.replace('-ExtEd', '-GLBL')
+    column = column.replace('-IVC', '-IV')
 
     first_dash_index = column.index('-')
     second_dash_index = column.index('-', first_dash_index + 1)
@@ -180,15 +181,15 @@ def match_columns(source_columns, destination_columns):
             if column_source["converted_column_id"] == column_dest["converted_column_id"]:
                 match_found = True
                 matched_columns.append({
-                    'old': column_source["original_column_id"],
-                    'new': column_dest["original_column_id"]
+                    'old_id': column_source["original_column_id"],
+                    'new_id': column_dest["original_column_id"]
                 })
                 matching_column_count += 1
                 break
         if not match_found:
             matched_columns.append({
-                    'old': column_source["original_column_id"],
-                    'new': ''
+                    'old_id': column_source["original_column_id"],
+                    'new_id': ''
                 })
     
     print(f"Found {matching_column_count} match(es) out of {len(source_columns)} SIMS column(s)")
@@ -199,7 +200,7 @@ def match_columns(source_columns, destination_columns):
 # Assumes the columns from SIMS and CS have already been matched
 def output_converted_columns(matched_columns, output_filepath, column_name):
     with open(output_filepath, 'w', newline='') as csv_output_file:
-        field_names = ['old', 'new', 'type']
+        field_names = ['old_id', 'new_id', 'type']
         csv_writer = csv.DictWriter(csv_output_file, fieldnames=field_names)
         csv_writer.writeheader()
         for row in matched_columns:
