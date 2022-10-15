@@ -18,7 +18,11 @@ def get_input():
     
     input_dict["file_type"] = input("File type ('course' or 'section'): ")
     input_dict["sims_filepath"] = input("Enter path to SIMS file for conversion: ")
+    input_dict["sims_column_match"] = input("Enter the SIMS file column to be used for matching: ")
+    input_dict["sims_column_out"] = input("Enter the SIMS file column to be used for output: ")
     input_dict["cs_filepath"] = input("Enter path to CS file for conversion: ")
+    input_dict["cs_column_match"] = input("Enter the CS file column to be used for matching: ")
+    input_dict["cs_column_out"] = input("Enter the CS file column to be used for output: ")
     input_dict["output_filepath"] = input("Enter path to ouptut file for conversion: ")
 
     return input_dict
@@ -62,11 +66,23 @@ def validate_input(input_dict):
         if len(validated_inputs["sims_file_contents"]) == 0:
             print(f"Error: SIMS file at {input_dict['sims_filepath']} was empty. Please provide a file with data.")
             validated_inputs["validated"] = False
+        if input_dict["sims_column_match"] not in validated_inputs["sims_file_contents"][0]:
+            print(f"Error: SIMS column for matching \"{input_dict['sims_column_match']}\" was not found in the file at {input_dict['sims_filepath']}")
+            validated_inputs["validated"] = False
+        if input_dict["sims_column_out"] not in validated_inputs["sims_file_contents"][0]:
+            print(f"Error: SIMS column for output \"{input_dict['sims_column_out']}\" was not found in the file at {input_dict['sims_filepath']}")
+            validated_inputs["validated"] = False
 
     if len(input_dict["cs_filepath"]) > 0:
         validated_inputs["cs_file_contents"] = read_file(input_dict["cs_filepath"])
         if len(validated_inputs["cs_file_contents"]) == 0:
             print(f"Error: CS file at {input_dict['cs_filepath']} was empty. Please provide a file with data.")
+            validated_inputs["validated"] = False
+        if input_dict["cs_column_match"] not in validated_inputs["cs_file_contents"][0]:
+            print(f"Error: CS column for matching \"{input_dict['cs_column_match']}\" was not found in the file at {input_dict['cs_filepath']}")
+            validated_inputs["validated"] = False
+        if input_dict["cs_column_out"] not in validated_inputs["cs_file_contents"][0]:
+            print(f"Error: CS column for output \"{input_dict['cs_column_out']}\" was not found in the file at {input_dict['cs_filepath']}")
             validated_inputs["validated"] = False
 
     if validated_inputs["validated"] == False:
@@ -126,44 +142,30 @@ def convert_column(column_string):
 
 # Used when file_type is 'course'
 # Assumes both SIMS and CS CSVs use "Course_ID" for the header of the course id column
-def convert_courses(file_contents):
+def convert_courses(file_contents, column_match, column_out):
     contents = file_contents
     converted_courses = []
-
-    # Make sure that the CSV header is 'Course_ID',
-    # instruct user to check the file if the header does not match
-    if 'Course_ID' not in contents[0]:
-        print('When converting courses, please ensure that the CSV\'s header for course is \'Course_ID\'.')
-        return converted_courses
     
     for index in range(len(contents)):
         course_row = contents[index]
-        course_id = course_row["Course_ID"]
         converted_courses.append({
-            'converted_column_id': convert_column(course_id),
-            'original_column_id': course_id
+            'converted_column_id': convert_column(course_row[column_match]),
+            'original_column_id': course_row[column_out]
         })
     
     return converted_courses
 
 # Used when file_type is 'section'
 # Assumes both SIMS and CS CSVs use "Section_id" for the header of the section id column
-def convert_sections(file_contents):
+def convert_sections(file_contents, column_match, column_out):
     contents = file_contents
     converted_sections = []
-
-    # Make sure that the CSV header is 'Section_id',
-    # instruct user to check the file if the header does not match
-    if 'Section_id' not in contents[0]:
-        print('When converting sections, please ensure that the CSV\'s header for section is \'Section_id\'.')
-        return converted_sections
     
     for index in range(len(contents)):
         section_row = contents[index]
-        section_id = section_row["Section_id"]
         converted_sections.append({
-            'converted_column_id': convert_column(section_id),
-            'original_column_id': section_id
+            'converted_column_id': convert_column(section_row[column_match]),
+            'original_column_id': section_row[column_out]
         })
     
     return converted_sections
@@ -216,9 +218,14 @@ def canvas_column_conversion():
     validated_inputs = validate_input(get_input())
 
     if validated_inputs["validated"]:
-        sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"]) if validated_inputs["file_type"] == 'course' else convert_sections(validated_inputs["sims_file_contents"])
-        cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"]) if validated_inputs["file_type"] == 'course' else convert_sections(validated_inputs["cs_file_contents"])
-        matched_columns = match_columns(sims_converted_columns, cs_converted_columns)
-        output_converted_columns(matched_columns, validated_inputs["output_filepath"], validated_inputs["file_type"])
+        sims_converted_columns = convert_courses(validated_inputs["sims_file_contents"], validated_inputs["sims_column_match"], validated_inputs["sims_column_out"])\
+            if validated_inputs["file_type"] == 'course'\
+            else convert_sections(validated_inputs["sims_file_contents"], validated_inputs["sims_column_match"], validated_inputs["sims_column_out"])
+        cs_converted_columns = convert_courses(validated_inputs["cs_file_contents"], validated_inputs["cs_column_match"], validated_inputs["cs_column_out"])\
+            if validated_inputs["file_type"] == 'course'\
+            else convert_sections(validated_inputs["cs_file_contents"], validated_inputs["cs_column_match"], validated_inputs["cs_column_out"])
+        if len(sims_converted_columns) > 0 and len(cs_converted_columns) > 0:
+            matched_columns = match_columns(sims_converted_columns, cs_converted_columns)
+            output_converted_columns(matched_columns, validated_inputs["output_filepath"], validated_inputs["file_type"])
 
 canvas_column_conversion()
