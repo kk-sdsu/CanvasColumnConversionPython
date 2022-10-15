@@ -8,6 +8,6 @@ RUN mkdir /usr/src/app/data/
 
 RUN mkdir /usr/src/app/example
 
-COPY ./*.csv /usr/src/app/example
+COPY ./*_test.csv /usr/src/app/example
 
 CMD [ "python", "/usr/src/app/canvas-column-conversion.py" ]
